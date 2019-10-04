@@ -4,15 +4,14 @@ const app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3500;
 
 // express routing
 app.use(express.static('public'));
 
-
 // signaling
 io.on('connection', function (socket) {
-    console.log('a user connected');
+    console.log('a user connected: ', socket.id);
 
     socket.on('create or join', function (room) {
         console.log('create or join to room ', room);
@@ -20,17 +19,17 @@ io.on('connection', function (socket) {
         var myRoom = io.sockets.adapter.rooms[room] || { length: 0 };
         var numClients = myRoom.length;
 
-        console.log(room, ' has ', numClients, ' clients');
+        console.log(room, ' has ', numClients, ' clients', ' before', socket.id, ' join');
 
         if (numClients == 0) {
             socket.join(room);
             socket.emit('created', room);
-        } else if (numClients == 1) {
+        } else {
             socket.join(room);
             socket.emit('joined', room);
-        } else {
-            socket.emit('full', room);
         }
+        console.log("The current sockets are: ", Object.keys(io.sockets.adapter.rooms[room].sockets))
+        
     });
 
     socket.on('ready', function (room){
@@ -52,6 +51,6 @@ io.on('connection', function (socket) {
 });
 
 // listener
-http.listen(port || 3000, function () {
+http.listen(port || 3500, function () {
     console.log('listening on', port);
 });

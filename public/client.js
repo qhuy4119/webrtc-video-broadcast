@@ -9,7 +9,8 @@ var remoteVideo = document.getElementById("remoteVideo");
 // variables
 var roomNumber;
 var localStream;
-var remoteStream;
+var broadcasterStream;
+var studentStreams = [];
 var rtcPeerConnection;
 var iceServers = {
     'iceServers': [
@@ -18,7 +19,7 @@ var iceServers = {
     ]
 }
 var streamConstraints = { audio: true, video: true };
-var isCaller;
+var isBroadcaster;
 
 // Let's do this
 var socket = io();
@@ -39,10 +40,11 @@ socket.on('created', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
         localStream = stream;
         localVideo.srcObject = stream;
-        isCaller = true;
+        isBroadcaster = true;
     }).catch(function (err) {
         console.log('An error ocurred when accessing media devices', err);
     });
+    console.log('I, ', socket.id, ' am the broadcaster');
 });
 
 socket.on('joined', function (room) {
@@ -53,6 +55,7 @@ socket.on('joined', function (room) {
     }).catch(function (err) {
         console.log('An error ocurred when accessing media devices', err);
     });
+    console.log('I, ', socket.id, ' am a student');
 });
 
 socket.on('candidate', function (event) {
@@ -64,7 +67,7 @@ socket.on('candidate', function (event) {
 });
 
 socket.on('ready', function () {
-    if (isCaller) {
+    if (isBroadcaster) {
         rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
         rtcPeerConnection.ontrack = onAddStream;
@@ -82,11 +85,14 @@ socket.on('ready', function () {
             .catch(error => {
                 console.log(error)
             })
+        console.log(socket.id, " is handling the ready event (so I'm supposed to be the teacher), \
+        which means I'm creating offer")
     }
+    
 });
 
 socket.on('offer', function (event) {
-    if (!isCaller) {
+    if (!isBroadcaster) {
         rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
         rtcPeerConnection.ontrack = onAddStream;
@@ -105,11 +111,15 @@ socket.on('offer', function (event) {
             .catch(error => {
                 console.log(error)
             })
+            console.log(socket.id, " is handling the offer event (so I'm supposed to be a student) \
+            , which means I'm creating answer")
     }
 });
 
 socket.on('answer', function (event) {
     rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event));
+    console.log(socket.id, " is handling the answer event (so I'm supposed to be a teacher) \
+            , which means I'm setting remote description")
 })
 
 // handler functions
@@ -127,6 +137,20 @@ function onIceCandidate(event) {
 }
 
 function onAddStream(event) {
-    remoteVideo.srcObject = event.streams[0];
-    remoteStream = event.stream;
+    if(!isBroadcaster){
+        remoteVideo.srcObject = event.streams[0];
+        broadcasterStream = event.stream;
+    }
+    else {
+        studentStreams.push(event.stream)
+        if (!remoteVideo.srcObject){
+            remoteVideo.srcObject = event.streams[0];
+        }
+        else {
+            let video = document.createElement("video");
+            video.srcObject = event.streams[0];
+            video.autoplay = true;
+            divConsultingRoom.appendChild(video)
+        }
+    }
 }
