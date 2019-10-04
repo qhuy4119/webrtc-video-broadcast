@@ -14,11 +14,8 @@ var studentStreams = [];
 // A STUDENT ONLY NEED ONE RTCPeerConnection to connect with the only teacher in the room. If a student can see
 // many teachers then this logic need to change
 var rtcPeerConnection; 
-var rtcPeerConnections = [] // REALLY IMPORTANT: THE BROADCASTER NEEDS A DISTINCT RTCPeerConnection FOR EACH STUDENT
-var currentStudentIndex = 0 // To access elements in rtcPeerConnections. How to improve: store each connection
-// with a student as key:value pair with key is the id of the student, value is the rtcPeerConnection
+var rtcPeerConnections = {}; // REALLY IMPORTANT: THE BROADCASTER NEEDS A DISTINCT RTCPeerConnection FOR EACH STUDENT
 
-// TO SUM UP: THE WHOLE PROCESS OF MANAGING RTCPeerConnection ABOVE IS A MESS. NEED FIXING IF HAVE TIME !!!
 
 var iceServers = {
     'iceServers': [
@@ -60,14 +57,14 @@ socket.on('joined', function (room) {
         localStream = stream;
         localVideo.srcObject = stream;
         isBroadcaster = false;
-        socket.emit('ready', roomNumber);
+        socket.emit('ready', roomNumber, socket.id);
     }).catch(function (err) {
         console.log('An error ocurred when accessing media devices', err);
     });
     console.log(socket.id, '(me) is a student');
 });
 
-socket.on('candidate', function (event) {
+socket.on('candidate', function (event, student_id) {
     var candidate = new RTCIceCandidate({
         sdpMLineIndex: event.label,
         candidate: event.candidate
@@ -76,29 +73,31 @@ socket.on('candidate', function (event) {
         rtcPeerConnection.addIceCandidate(candidate);
     }
     else{
-        rtcPeerConnections[currentStudentIndex].addIceCandidate(candidate);
+        rtcPeerConnections[student_id].addIceCandidate(candidate);
     }
+    console.log("candidate called");
     
 });
 
-socket.on('ready', function () {
+socket.on('ready', function (student_id) {
     if (isBroadcaster) {
+        console.log("Student_id: ", student_id)
         let rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
         rtcPeerConnection.ontrack = onAddStream;
         rtcPeerConnection.addTrack(localStream.getTracks()[0], localStream);
         rtcPeerConnection.addTrack(localStream.getTracks()[1], localStream);
-        rtcPeerConnections.push(rtcPeerConnection);
-        console.log(rtcPeerConnections);
+        rtcPeerConnections[student_id] = rtcPeerConnection;
+        console.log("The object keys: ",Object.keys(rtcPeerConnections));
+        console.log("The number of properties in rtcPeerConnections: ", Object.keys(rtcPeerConnections).length);
         rtcPeerConnection.createOffer()
             .then(sessionDescription => {
-                
                 rtcPeerConnection.setLocalDescription(sessionDescription);
                 socket.emit('offer', {
                     type: 'offer',
                     sdp: sessionDescription,
                     room: roomNumber
-                });
+                }, socket.id);
             })
             .catch(error => {
                 console.log(error)
@@ -110,7 +109,7 @@ socket.on('ready', function () {
     
 });
 
-socket.on('offer', function (event) {
+socket.on('offer', function (event, broadcaster_id) {
     if (!isBroadcaster) {
         rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
@@ -125,40 +124,37 @@ socket.on('offer', function (event) {
                     type: 'answer',
                     sdp: sessionDescription,
                     room: roomNumber
-                });
+                }, socket.id);
             })
             .catch(error => {
                 console.log(error)
             })
-            console.log(socket.id, " is handling the offer event (so I'm supposed to be a student)"
+            console.log(socket.id, " is handling the offer event (so I'm supposed to be a student) from " +String(broadcaster_id)
                         + " which means I'm creating answer")
     }
 });
 
-socket.on('answer', function (event) {
+socket.on('answer', function (event, student_id) {
     if(isBroadcaster){
-        rtcPeerConnections[currentStudentIndex].setRemoteDescription(new RTCSessionDescription(event));
+        rtcPeerConnections[student_id].setRemoteDescription(new RTCSessionDescription(event));
         console.log(socket.id, " is handling the answer event (so I'm supposed to be a teacher)"
                     + " which means I'm setting remote description");
-        currentStudentIndex++;
-
-    }
-    
-    
+    }   
 })
 
 // handler functions
 function onIceCandidate(event) {
     if (event.candidate) {
-        console.log('sending ice candidate');
+        console.log('sending ice candidate (onIceCandidate() called)');
         socket.emit('candidate', {
             type: 'candidate',
             label: event.candidate.sdpMLineIndex,
             id: event.candidate.sdpMid,
             candidate: event.candidate.candidate,
             room: roomNumber
-        })
+        }, socket.id)
     }
+
 }
 
 function onAddStream(event) {
@@ -178,4 +174,5 @@ function onAddStream(event) {
             divConsultingRoom.appendChild(video)
         }
     }
+    console.log("onAddStream() called");
 }

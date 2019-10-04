@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <head>
-    <title>WebRTC Video Conference Tutorial - Plain WebRTC</title>
+    <title>WebRTC Video Conference</title>
+    
 </head>
 <body>
-    <h1>WebRTC Video Conference Tutorial - Plain WebRTC</h1>
+    <h1>WebRTC Video Conference</h1>
 
     <div id="selectRoom">
         <label>Type the room number</label>
         <input id="roomNumber" type="text" />
         <button id="goRoom">Go</button>
+        <p> Currently, the creator of a room will be the teacher. This logic will be changed in the future.
+            We're also having an issue where too many video appears in the teacher's screen
+        </p>
     </div>
 
     <div id="consultingRoom" style="display:none">
         <video id="localVideo" autoplay></video>
         <video id="remoteVideo" autoplay></video>
     </div>
-
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src="client.js"></script>
 </body>

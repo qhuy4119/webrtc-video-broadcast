@@ -32,20 +32,21 @@ io.on('connection', function (socket) {
         
     });
 
-    socket.on('ready', function (room){
-        socket.broadcast.to(room).emit('ready');
+    socket.on('ready', function (room, sender_id){
+        socket.broadcast.to(room).emit('ready', String(sender_id));
+        console.log("The sender id: ", sender_id);
     });
 
-    socket.on('candidate', function (event){
-        socket.broadcast.to(event.room).emit('candidate', event);
+    socket.on('candidate', function (event, sender_id){
+        socket.broadcast.to(event.room).emit('candidate', event, String(sender_id));
     });
 
-    socket.on('offer', function(event){
-        socket.broadcast.to(event.room).emit('offer',event.sdp);
+    socket.on('offer', function(event, sender_id){
+        socket.broadcast.to(event.room).emit('offer',event.sdp, sender_id);
     });
 
-    socket.on('answer', function(event){
-        socket.broadcast.to(event.room).emit('answer',event.sdp);
+    socket.on('answer', function(event, sender_id){
+        socket.broadcast.to(event.room).emit('answer',event.sdp, String(sender_id));
     });
 
 });
