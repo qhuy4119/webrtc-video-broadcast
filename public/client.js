@@ -11,7 +11,15 @@ var roomNumber;
 var localStream;
 var broadcasterStream;
 var studentStreams = [];
-var rtcPeerConnection;
+// A STUDENT ONLY NEED ONE RTCPeerConnection to connect with the only teacher in the room. If a student can see
+// many teachers then this logic need to change
+var rtcPeerConnection; 
+var rtcPeerConnections = [] // REALLY IMPORTANT: THE BROADCASTER NEEDS A DISTINCT RTCPeerConnection FOR EACH STUDENT
+var currentStudentIndex = 0 // To access elements in rtcPeerConnections. How to improve: store each connection
+// with a student as key:value pair with key is the id of the student, value is the rtcPeerConnection
+
+// TO SUM UP: THE WHOLE PROCESS OF MANAGING RTCPeerConnection ABOVE IS A MESS. NEED FIXING IF HAVE TIME !!!
+
 var iceServers = {
     'iceServers': [
         { 'urls': 'stun:stun.services.mozilla.com' },
@@ -44,18 +52,19 @@ socket.on('created', function (room) {
     }).catch(function (err) {
         console.log('An error ocurred when accessing media devices', err);
     });
-    console.log('I, ', socket.id, ' am the broadcaster');
+    console.log(socket.id, '(me) is the broadcaster');
 });
 
 socket.on('joined', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
         localStream = stream;
         localVideo.srcObject = stream;
+        isBroadcaster = false;
         socket.emit('ready', roomNumber);
     }).catch(function (err) {
         console.log('An error ocurred when accessing media devices', err);
     });
-    console.log('I, ', socket.id, ' am a student');
+    console.log(socket.id, '(me) is a student');
 });
 
 socket.on('candidate', function (event) {
@@ -63,18 +72,27 @@ socket.on('candidate', function (event) {
         sdpMLineIndex: event.label,
         candidate: event.candidate
     });
-    rtcPeerConnection.addIceCandidate(candidate);
+    if (!isBroadcaster){
+        rtcPeerConnection.addIceCandidate(candidate);
+    }
+    else{
+        rtcPeerConnections[currentStudentIndex].addIceCandidate(candidate);
+    }
+    
 });
 
 socket.on('ready', function () {
     if (isBroadcaster) {
-        rtcPeerConnection = new RTCPeerConnection(iceServers);
+        let rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
         rtcPeerConnection.ontrack = onAddStream;
         rtcPeerConnection.addTrack(localStream.getTracks()[0], localStream);
         rtcPeerConnection.addTrack(localStream.getTracks()[1], localStream);
+        rtcPeerConnections.push(rtcPeerConnection);
+        console.log(rtcPeerConnections);
         rtcPeerConnection.createOffer()
             .then(sessionDescription => {
+                
                 rtcPeerConnection.setLocalDescription(sessionDescription);
                 socket.emit('offer', {
                     type: 'offer',
@@ -85,8 +103,9 @@ socket.on('ready', function () {
             .catch(error => {
                 console.log(error)
             })
-        console.log(socket.id, " is handling the ready event (so I'm supposed to be the teacher), \
-        which means I'm creating offer")
+        
+        console.log(socket.id, " is handling the ready event (so I'm supposed to be the teacher)"
+                    + " which means I'm creating offer")
     }
     
 });
@@ -111,15 +130,21 @@ socket.on('offer', function (event) {
             .catch(error => {
                 console.log(error)
             })
-            console.log(socket.id, " is handling the offer event (so I'm supposed to be a student) \
-            , which means I'm creating answer")
+            console.log(socket.id, " is handling the offer event (so I'm supposed to be a student)"
+                        + " which means I'm creating answer")
     }
 });
 
 socket.on('answer', function (event) {
-    rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event));
-    console.log(socket.id, " is handling the answer event (so I'm supposed to be a teacher) \
-            , which means I'm setting remote description")
+    if(isBroadcaster){
+        rtcPeerConnections[currentStudentIndex].setRemoteDescription(new RTCSessionDescription(event));
+        console.log(socket.id, " is handling the answer event (so I'm supposed to be a teacher)"
+                    + " which means I'm setting remote description");
+        currentStudentIndex++;
+
+    }
+    
+    
 })
 
 // handler functions
