@@ -11,6 +11,7 @@ var roomNumber;
 var localStream;
 var broadcasterStream;
 var studentStreams = [];
+
 // A STUDENT ONLY NEED ONE RTCPeerConnection to connect with the only teacher in the room. If a student can see
 // many teachers then this logic need to change
 var rtcPeerConnection; 
@@ -41,6 +42,9 @@ btnGoRoom.onclick = function () {
 };
 
 // message handlers
+
+
+///////////////////////////////// Broadcaster only message handlers
 socket.on('created', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
         localStream = stream;
@@ -50,33 +54,6 @@ socket.on('created', function (room) {
         console.log('An error ocurred when accessing media devices', err);
     });
     console.log(socket.id, '(me) is the broadcaster');
-});
-
-socket.on('joined', function (room) {
-    navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
-        localStream = stream;
-        localVideo.srcObject = stream;
-        isBroadcaster = false;
-        socket.emit('ready', roomNumber, socket.id);
-    }).catch(function (err) {
-        console.log('An error ocurred when accessing media devices', err);
-    });
-    console.log(socket.id, '(me) is a student');
-});
-
-socket.on('candidate', function (event, student_id) {
-    var candidate = new RTCIceCandidate({
-        sdpMLineIndex: event.label,
-        candidate: event.candidate
-    });
-    if (!isBroadcaster){
-        rtcPeerConnection.addIceCandidate(candidate);
-    }
-    else{
-        rtcPeerConnections[student_id].addIceCandidate(candidate);
-    }
-    console.log("candidate called");
-    
 });
 
 socket.on('ready', function (student_id) {
@@ -108,6 +85,29 @@ socket.on('ready', function (student_id) {
     }
     
 });
+socket.on('answer', function (event, student_id) {
+    if(isBroadcaster){
+        rtcPeerConnections[student_id].setRemoteDescription(new RTCSessionDescription(event)).catch(
+            ()=>{ console.log("The error occured on answer") }
+        );
+        console.log(socket.id, " is handling the answer event (so I'm supposed to be a teacher)"
+                    + " which means I'm setting remote description");
+    }   
+})
+
+
+/////////////////////////// Student only message handlers
+socket.on('joined', function (room) {
+    navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
+        localStream = stream;
+        localVideo.srcObject = stream;
+        isBroadcaster = false;
+        socket.emit('ready', roomNumber, socket.id);
+    }).catch(function (err) {
+        console.log('An error ocurred when accessing media devices', err);
+    });
+    console.log(socket.id, '(me) is a student');
+});
 
 socket.on('offer', function (event, broadcaster_id) {
     if (!isBroadcaster) {
@@ -134,13 +134,28 @@ socket.on('offer', function (event, broadcaster_id) {
     }
 });
 
-socket.on('answer', function (event, student_id) {
-    if(isBroadcaster){
-        rtcPeerConnections[student_id].setRemoteDescription(new RTCSessionDescription(event));
-        console.log(socket.id, " is handling the answer event (so I'm supposed to be a teacher)"
-                    + " which means I'm setting remote description");
-    }   
-})
+
+
+// Handlers of both roles
+socket.on('candidate', function (event, student_id) {
+    var candidate = new RTCIceCandidate({
+        sdpMLineIndex: event.label,
+        candidate: event.candidate
+    });
+    if (!isBroadcaster){
+        if (rtcPeerConnection.signalingState !== "stable"){
+            rtcPeerConnection.addIceCandidate(candidate);
+        }
+        
+    }
+    else{
+        rtcPeerConnections[student_id].addIceCandidate(candidate);
+    }
+    console.log("candidate called");
+    
+});
+
+
 
 // handler functions
 function onIceCandidate(event) {
