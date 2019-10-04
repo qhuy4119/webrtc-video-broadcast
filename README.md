@@ -1,4 +1,5 @@
 Issues needs fixing: 
-1. Dynamically generate video on teacher's screen when a students join the room (currently generate too many videos because a new <video> element is created each time track event fired)
-2. Connection problems when there are more than 2 people in a room (don't know if it's because running on localhost)
-3. Get socket.io io undefined problem when deploying by using now.sh ( After googling, now.sh doesn't seem to support Websocket at the moment :( )
+1. Dynamically generate video on teacher's screen when a students join the room (currently generate too many videos because a new <video> element is created each time a track event is fired)
+2. Connection problems when there are more than 2 people in a room (students seems to lost connection with teacher)
+3. Can't complete signaling when 2 peers are on different LANs (not sure whether it's because my network is slow). Runs smoothly when tested with 2 peers on the same LAN
+
