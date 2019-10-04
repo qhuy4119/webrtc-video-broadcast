@@ -1,15 +1,4 @@
-# WebRTC Video Conference Tutorial
-
-This tutorial is divided in three versions:
-
-* Plain WebRTC (One to One)
-* WebRTC using Media Server (Many to Many)
-* WebRTC using CPaaS (Many to Many)
-
-Each version lives on its own branch so you can checkout to each one to review them.
-
-    git checkout webrtc     // for one to one webrtc tutorial
-    git checkout kurento    // for webrtc using media server
-    git checkout tokbox     // for webrtc using CPaaS
-
-As you can see we're using [Kurento](http://www.kurento.org/) as media server and [Tokbox](https://tokbox.com/) as CPaaS service.
+Issues needs fixing: 
+1. Dynamically generate video on teacher's screen when a students join the room (currently generate too many videos because a new <video> element is created each time track event fired)
+2. Connection problems when there are more than 2 people in a room (don't know if it's because running on localhost)
+3. Get socket.io io undefined problem when deploying by using now.sh.
