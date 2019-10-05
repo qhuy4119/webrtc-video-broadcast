@@ -9,6 +9,7 @@ const port = process.env.PORT || 3000;
 // express routing
 app.use(express.static('public'));
 
+var BROADCASTER_ID;
 // signaling
 io.on('connection', function (socket) {
     console.log('a user connected: ', socket.id);
@@ -22,6 +23,7 @@ io.on('connection', function (socket) {
         console.log(room, ' has ', numClients, ' clients', ' before', socket.id, ' join');
 
         if (numClients == 0) {
+            BROADCASTER_ID = socket.id;
             socket.join(room);
             socket.emit('created', room);
         } else {
@@ -38,7 +40,14 @@ io.on('connection', function (socket) {
     });
 
     socket.on('candidate', function (event, sender_id){
-        socket.broadcast.to(event.room).emit('candidate', event, String(sender_id));
+        if (sender_id === BROADCASTER_ID){
+            socket.broadcast.to(event.room).emit('candidate', event, String(sender_id));
+        }
+        else
+        {
+            socket.broadcast.to(BROADCASTER_ID).emit('candidate', event, String(sender_id));
+        }
+
     });
 
     socket.on('offer', function(event, sender_id){
