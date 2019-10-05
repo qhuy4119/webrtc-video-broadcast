@@ -56,7 +56,7 @@ socket.on('created', function (room) {
         console.log('An error ocurred when accessing media devices', err);
         alert("Having error opening your camera and/or microphone: ", err.message);
     });
-    alert("You are the broadcaster of room " + String(room));
+    //alert("You are the broadcaster of room " + String(room));
     console.log(socket.id, ' (me) is the broadcaster');
 });
 
@@ -69,10 +69,10 @@ socket.on('ready', function (student_id) {
         // when it needs you to transmit an ICE candidate to the other peer,
         // through your signaling server
 
-        tempConnection.ontrack = onAddStream;
-
+        tempConnection.ontrack = onTrackHandler;
         // /This handler for the track event is called by the local WebRTC layer when a track is 
         // added to the connection. This lets you connect the incoming media to an element to display it  
+
         tempConnection.onnegotiationneeded = () => {
             tempConnection.createOffer().then(sessionDescription => {
                 tempConnection.setLocalDescription(sessionDescription);
@@ -80,7 +80,7 @@ socket.on('ready', function (student_id) {
                     type: 'offer',
                     sdp: sessionDescription,
                     room: roomNumber
-                });
+                }, socket.id);
             })
             .catch(error => {
                 console.log(error)
@@ -125,7 +125,7 @@ socket.on('offer', function (event, broadcaster_id) {
     if (!isBroadcaster) {
         rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
-        rtcPeerConnection.ontrack = onAddStream;
+        rtcPeerConnection.ontrack = onTrackHandler;
 
         rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event))
         .then(function() {
@@ -148,20 +148,8 @@ socket.on('offer', function (event, broadcaster_id) {
           .catch(error => {
             console.log(error)
             })
-        console.log(socket.id, " is handling the offer event (so I'm supposed to be a student) from " +String(broadcaster_id)
+        console.log(socket.id, " is handling the offer event (so I'm supposed to be a student) from " + String(broadcaster_id)
                     + " which means I'm creating answer")
-
-        // rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event.sdp));
-        // rtcPeerConnection.createAnswer()
-        //     .then(sessionDescription => {
-        //         rtcPeerConnection.setLocalDescription(sessionDescription);
-        //         socket.emit('answer', {
-        //             type: 'answer',
-        //             sdp: sessionDescription,
-        //             room: roomNumber
-        //         }, socket.id);
-        //     })
-            
     }
 });
 
@@ -216,22 +204,28 @@ function onIceCandidate(event) {
 
 }
 
-function onAddStream(event) {
+function onTrackHandler(event) {
     if(!isBroadcaster){
         remoteVideo.srcObject = event.streams[0];
-        broadcasterStream = event.stream;
+        broadcasterStream = event.streams[0];
     }
     else {
-        studentStreams.push(event.stream)
+        studentStreams.push(event.streams[0])
         if (!remoteVideo.srcObject){
             remoteVideo.srcObject = event.streams[0];
         }
-        else {
+        else if (!studentStreams.includes(event.streams[0])) {
             let video = document.createElement("video");
             video.srcObject = event.streams[0];
             video.autoplay = true;
             divConsultingRoom.appendChild(video)
         }
     }
-    console.log("onAddStream() called");
+    console.log("studentStreams: ", studentStreams);
+    console.log("onTrackHandler() called");
 }
+
+socket.on('user_leave', function(leaver_id){
+    console.log(String(leaver_id) + " has left the room");
+    //TODO: clean up, delete video on the screen,....
+});

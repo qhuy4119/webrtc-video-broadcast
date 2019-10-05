@@ -36,7 +36,6 @@ io.on('connection', function (socket) {
 
     socket.on('ready', function (room, sender_id){
         socket.broadcast.to(room).emit('ready', String(sender_id));
-        console.log("The sender id: ", sender_id);
     });
 
     socket.on('candidate', function (event, sender_id){
@@ -56,6 +55,9 @@ io.on('connection', function (socket) {
 
     socket.on('answer', function(event, sender_id){
         socket.broadcast.to(event.room).emit('answer',event.sdp, String(sender_id));
+    });
+    socket.on('disconnect', function(){
+        socket.broadcast.to(socket.rooms).emit('user_leave', socket.id);
     });
 
 });
