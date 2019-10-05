@@ -17,11 +17,11 @@ var studentStreams = [];
 var rtcPeerConnection; 
 var rtcPeerConnections = {}; // REALLY IMPORTANT: THE BROADCASTER NEEDS A DISTINCT RTCPeerConnection FOR EACH STUDENT
 
-
 var iceServers = {
     'iceServers': [
         { 'urls': 'stun:stun.services.mozilla.com' },
-        { 'urls': 'stun:stun.l.google.com:19302' }
+        { 'urls': 'stun:stun.5sn.com:3478' },
+        { 'urls': 'stun:stun.stunprotocol.org' }
     ]
 }
 var streamConstraints = { audio: true, video: true };
