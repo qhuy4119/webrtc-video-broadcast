@@ -13,8 +13,12 @@ How this works:
 
 Issues needs fixing: 
 1. Dynamically generate video on teacher's screen when a students join the room (currently generate too many videos because a new <video> element is created each time a track event is fired, and ontrack is fired twice, one for audio, one for video)
+    
     Update: A fix has been implemented but not tested. It may or may not work.
+    
 2. Connection problems when there are more than 2 people in a room (previously connected students seem to lost connection with teacher). This seems to originate from the fact that the 1st student receives the ICE broadcast from the 2nd student
+
     Update: A fix has been implemented but not tested. This is the same as the 1st issue. I don't have the resource to test (strong internet connection and different physical devices). The fix failed when I tested on my machine but after investigating, I think it **may** have been the limitation of my resources that caused the fix to fail.
+    
 3. Can't complete signaling when 2 peers are on different LANs (not sure whether it's because my network is slow, REMEMBER TO CHECK IF PORT IS OPEN FOR CONNECTION WITH ICE SERVERS). Runs smoothly when tested with 2 peers on the same LAN
 
