@@ -11,7 +11,7 @@ var remoteVideo = document.getElementById("remoteVideo");
 var roomNumber;
 var localStream;
 var broadcasterStream;
-var studentStreams = [];
+var studentStreamsId = [];
 
 // A STUDENT ONLY NEED ONE RTCPeerConnection to connect with the only teacher in the room. If a student can see
 // many teachers then this logic need to change
@@ -209,18 +209,21 @@ function onTrackHandler(event) {
         broadcasterStream = event.streams[0];
     }
     else {
-        studentStreams.push(event.streams[0])
         if (!remoteVideo.srcObject){
             remoteVideo.srcObject = event.streams[0];
         }
-        else if (!studentStreams.includes(event.streams[0])) {
+        else if (!studentStreamsId.includes(event.streams[0].id)) {
             let video = document.createElement("video");
             video.srcObject = event.streams[0];
             video.autoplay = true;
-            divConsultingRoom.appendChild(video)
+            divConsultingRoom.appendChild(video)   
         }
+        if (!studentStreamsId.includes(event.streams[0].id)){
+            studentStreamsId.push(event.streams[0].id);
+        }
+         
     }
-    console.log("studentStreams: ", studentStreams);
+    console.log("studentStreamsId: ", studentStreamsId);
     console.log("onTrackHandler() called");
 }
 
