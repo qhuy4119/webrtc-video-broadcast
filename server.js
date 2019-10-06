@@ -35,7 +35,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('ready', function (room, sender_id){
-        socket.broadcast.to(room).emit('ready', String(sender_id));
+        socket.broadcast.to(BROADCASTER_ID).emit('ready', String(sender_id));
     });
 
     socket.on('candidate', function (event, sender_id){
@@ -49,12 +49,12 @@ io.on('connection', function (socket) {
 
     });
 
-    socket.on('offer', function(event, sender_id){
-        socket.broadcast.to(event.room).emit('offer',event.sdp, sender_id);
+    socket.on('offer', function(event, receiver_id){
+        socket.broadcast.to(receiver_id).emit('offer',event.sdp);
     });
 
     socket.on('answer', function(event, sender_id){
-        socket.broadcast.to(event.room).emit('answer',event.sdp, String(sender_id));
+        socket.broadcast.to(BROADCASTER_ID).emit('answer',event.sdp, String(sender_id));
     });
     socket.on('disconnect', function(){
         socket.broadcast.to(socket.rooms).emit('user_leave', socket.id);

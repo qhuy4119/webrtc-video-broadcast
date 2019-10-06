@@ -21,9 +21,10 @@ var tempConnection;
 
 var iceServers = {
     serverList: [
-        { urls: 'stun:stun.services.mozilla.com' },
-        { urls: 'stun:stun.5sn.com:3478' },
-        { urls: 'stun:stun.stunprotocol.org' }
+        { 'urls': 'stun:stun.services.mozilla.com' },
+        { 'urls': 'stun:stun.l.google.com:19302' },
+        { 'urls': 'stun:stun.5sn.com:3478' },
+        { 'urls': 'stun:stun.stunprotocol.org' }
     ]
 }
 var streamConstraints = { audio: true, video: true };
@@ -80,7 +81,7 @@ socket.on('ready', function (student_id) {
                     type: 'offer',
                     sdp: sessionDescription,
                     room: roomNumber
-                }, socket.id);
+                }, student_id);
             })
             .catch(error => {
                 console.log(error)
@@ -121,7 +122,7 @@ socket.on('joined', function (room) {
     console.log(socket.id, '(me) is a student');
 });
 
-socket.on('offer', function (event, broadcaster_id) {
+socket.on('offer', function (event) {
     if (!isBroadcaster) {
         rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
@@ -148,7 +149,7 @@ socket.on('offer', function (event, broadcaster_id) {
           .catch(error => {
             console.log(error)
             })
-        console.log(socket.id, " is handling the offer event (so I'm supposed to be a student) from " + String(broadcaster_id)
+        console.log(socket.id, " is handling the offer event (so I'm supposed to be a student)"
                     + " which means I'm creating answer")
     }
 });
@@ -167,13 +168,11 @@ socket.on('candidate', function (event, sender_id) {
         rtcPeerConnections[sender_id].addIceCandidate(candidate);     
     }   
     else{
-        //if (rtcPeerConnection.signalingState !== "stable"){
             rtcPeerConnection.addIceCandidate(candidate);
     }
     console.log("added ICE candidate from: " + String(sender_id));
     
 });
-
 
 
 // handler functions
