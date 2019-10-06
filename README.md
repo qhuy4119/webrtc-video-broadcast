@@ -22,3 +22,4 @@ Issues needs fixing:
     
 3. Can't complete signaling when 2 peers are on different LANs (not sure whether it's because my network is slow, REMEMBER TO CHECK IF PORT IS OPEN FOR CONNECTION WITH ICE SERVERS). Runs smoothly when tested with 2 peers on the same LAN
 
+    Update: Even if tested on the tutorial app on which this repo is based, with 2 computers on different LAN, callee only receives audio while caller receives neither audio nor video. So hopefully the client code here isn't the issue
