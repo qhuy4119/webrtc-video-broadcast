@@ -21,9 +21,9 @@ var tempConnection;
 
 var iceServers = {
     serverList: [
+        { 'urls': 'stun:stun.l.google.com:19302' },
         // { 'urls': 'stun:stun.services.mozilla.com' },
-        //{ 'urls': 'stun:stun.l.google.com:19302' },
-         { 'urls': 'stun:stun.5sn.com:3478' },
+         //{ 'urls': 'stun:stun.5sn.com:3478' },
         // { 'urls': 'stun:stun.stunprotocol.org' }
     ]
 }
@@ -86,7 +86,7 @@ socket.on('ready', function (student_id) {
                     sdp: sessionDescription,
                     room: roomNumber
                 }, student_id);
-                console.log("sdp in the answer: " + String(sessionDescription));
+                console.log("sdp in the offer: " + JSON.stringify(sessionDescription));
             })
             .catch(error => {
                 console.log(error)
@@ -152,7 +152,7 @@ socket.on('offer', function (event) {
                 sdp: rtcPeerConnection.localDescription,
                 room: roomNumber
             }, socket.id);
-            console.log("sdp in the answer: " + String(rtcPeerConnection.localDescription));
+            console.log("sdp in the answer: " + JSON.stringify(rtcPeerConnection.localDescription));
             }
           )
           .catch(error => {
