@@ -164,13 +164,26 @@ socket.on('candidate', function (event, sender_id) {
         sdpMLineIndex: event.label,
         candidate: event.candidate
     });
+    console.log(console.log(JSON.stringify(event)));
     if (isBroadcaster){
-        rtcPeerConnections[sender_id].addIceCandidate(candidate);     
+        rtcPeerConnections[sender_id].addIceCandidate(candidate).then(function() {
+            console.log("added ICE candidate from: " + String(sender_id));
+        })
+        .catch(e => {
+            console.log("Failure during addIceCandidate(): " + e.name);
+        }
+        )
     }   
     else{
-            rtcPeerConnection.addIceCandidate(candidate);
+            rtcPeerConnection.addIceCandidate(candidate).then(function() {
+                console.log("added ICE candidate from: " + String(sender_id));
+            })
+            .catch(e => {
+                console.log("Failure during addIceCandidate(): " + e.name);
+            }
+            )
     }
-    console.log("added ICE candidate from: " + String(sender_id));
+    
     
 });
 
@@ -221,9 +234,9 @@ function onTrackHandler(event) {
         if (!studentStreamsId.includes(event.streams[0].id)){
             studentStreamsId.push(event.streams[0].id);
         }
-         
+        console.log("studentStreamsId: ", studentStreamsId);
     }
-    console.log("studentStreamsId: ", studentStreamsId);
+    
     console.log("onTrackHandler() called");
 }
 

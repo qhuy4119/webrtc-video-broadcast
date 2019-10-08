@@ -4,10 +4,7 @@ const app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-const port = process.env.PORT;
-if (port == null || port == "") {
-    port = 3000;
-  }
+const port = process.env.PORT || 3000;
 
 // express routing
 app.use(express.static('public'));
