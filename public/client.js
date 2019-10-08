@@ -65,6 +65,10 @@ socket.on('ready', function (student_id) {
     if (isBroadcaster) {
         console.log("Student_id: ", student_id, " has just joined the room. Let's start connecting with him/her")
         tempConnection = new RTCPeerConnection(iceServers);
+
+        tempConnection.oniceconnectionstatechange = () => {
+                console.log("*** ICE connection state changed to " + String(rtcPeerConnections[student_id].iceConnectionState));
+        }
         tempConnection.onicecandidate = onIceCandidate;
         // The local ICE layer calls your icecandidate event handler
         // when it needs you to transmit an ICE candidate to the other peer,
@@ -127,6 +131,9 @@ socket.on('offer', function (event) {
         rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
         rtcPeerConnection.ontrack = onTrackHandler;
+        rtcPeerConnection.oniceconnectionstatechange = () => {
+                console.log("*** ICE connection state changed to " + String(rtcPeerConnection.iceConnectionState));
+        }
 
         rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event))
         .then(function() {
@@ -193,7 +200,7 @@ socket.on('candidate', function (event, sender_id) {
 // when icecandidate event is fired after a call of setLocalDescription(). This handler will send ice candidate 
 // to the other end of the call
 function onIceCandidate(event) {
-    if (event.candidate && isBroadcaster) {
+    if (event.candidate) {
         console.log('Broadcaster is sending ice candidate; (onIceCandidateBroadcaster() called)');
         socket.emit('candidate', {
             type: 'candidate',
@@ -203,16 +210,16 @@ function onIceCandidate(event) {
             room: roomNumber
         }, socket.id)
     }
-    else if(event.candidate && !isBroadcaster){
-        console.log('Student is sending ice candidate; (onIceCandidateBroadcaster() called)');
-        socket.emit('candidate', {
-            type: 'candidate',
-            label: event.candidate.sdpMLineIndex,
-            id: event.candidate.sdpMid,
-            candidate: event.candidate.candidate,
-            room: roomNumber
-        }, socket.id)
-    }
+    // else if(event.candidate && !isBroadcaster){
+    //     console.log('Student is sending ice candidate; (onIceCandidateBroadcaster() called)');
+    //     socket.emit('candidate', {
+    //         type: 'candidate',
+    //         label: event.candidate.sdpMLineIndex,
+    //         id: event.candidate.sdpMid,
+    //         candidate: event.candidate.candidate,
+    //         room: roomNumber
+    //     }, socket.id)
+    // }
 
 }
 
