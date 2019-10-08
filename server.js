@@ -4,7 +4,10 @@ const app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
+if (port == null || port == "") {
+    port = 3000;
+  }
 
 // express routing
 app.use(express.static('public'));
@@ -63,6 +66,6 @@ io.on('connection', function (socket) {
 });
 
 // listener
-http.listen(port || 3000, function () {
+http.listen(port, function () {
     console.log('listening on', port);
 });
