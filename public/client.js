@@ -167,11 +167,8 @@ socket.on('offer', function (event) {
 
 // When receiving ICE candidate from the other end
 socket.on('candidate', function (event, sender_id) {
-    var candidate = new RTCIceCandidate({
-        sdpMLineIndex: event.label,
-        candidate: event.candidate
-    });
-    console.log(console.log(JSON.stringify(event)));
+    var candidate = new RTCIceCandidate(event.candidate);
+    console.log(JSON.stringify(event));
     if (isBroadcaster){
         rtcPeerConnections[sender_id].addIceCandidate(candidate).then(function() {
             console.log("added ICE candidate from: " + String(sender_id));
@@ -201,12 +198,10 @@ socket.on('candidate', function (event, sender_id) {
 // to the other end of the call
 function onIceCandidate(event) {
     if (event.candidate) {
-        console.log('Broadcaster is sending ice candidate; (onIceCandidateBroadcaster() called)');
+        console.log('sending ice candidate; (onIceCandidateBroadcaster() called)' + JSON.stringify(event));
         socket.emit('candidate', {
             type: 'candidate',
-            label: event.candidate.sdpMLineIndex,
-            id: event.candidate.sdpMid,
-            candidate: event.candidate.candidate,
+            candidate: event.candidate,
             room: roomNumber
         }, socket.id)
     }
