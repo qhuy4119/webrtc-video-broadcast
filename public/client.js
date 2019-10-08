@@ -86,7 +86,7 @@ socket.on('ready', function (student_id) {
                     sdp: sessionDescription,
                     room: roomNumber
                 }, student_id);
-                console.log("sdp in the answer: " + String(rtcPeerConnection.localDescription));
+                console.log("sdp in the answer: " + String(sessionDescription);
             })
             .catch(error => {
                 console.log(error)
