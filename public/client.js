@@ -97,9 +97,9 @@ socket.on('ready', function (student_id) {
         
         rtcPeerConnections[student_id] = tempConnection;
 
-        console.log("The current student ids: ",Object.keys(rtcPeerConnections));
-        console.log("The number of students in the room: ", Object.keys(rtcPeerConnections).length);  
-        console.log(socket.id, " is handling the ready event (so I'm supposed to be the teacher)")
+        // console.log("The current student ids: ",Object.keys(rtcPeerConnections));
+        // console.log("The number of students in the room: ", Object.keys(rtcPeerConnections).length);  
+        console.log(socket.id, " is handling the ready event (so I'm supposed to be the teacher)", " from " + String(student_id));
     }   
 });
 
@@ -108,7 +108,7 @@ socket.on('answer', function (event, student_id) {
         rtcPeerConnections[student_id].setRemoteDescription(new RTCSessionDescription(event)).catch(
             ()=>{ console.log("The error occured while processing the answer of student: ", student_id) }
         );
-        console.log(socket.id, " is handling the answer event (so I'm supposed to be a teacher)"
+        console.log(socket.id, " is handling the answer event (so I'm supposed to be a teacher)" + " from " + String(student_id)
                     + " which means I'm setting remote description");
     }   
 })
@@ -198,24 +198,13 @@ socket.on('candidate', function (event, sender_id) {
 // to the other end of the call
 function onIceCandidate(event) {
     if (event.candidate) {
-        console.log('sending ice candidate; (onIceCandidateBroadcaster() called)' + JSON.stringify(event));
+        console.log('sending ice candidate: )' + String(event.candidate));
         socket.emit('candidate', {
             type: 'candidate',
             candidate: event.candidate,
             room: roomNumber
         }, socket.id)
     }
-    // else if(event.candidate && !isBroadcaster){
-    //     console.log('Student is sending ice candidate; (onIceCandidateBroadcaster() called)');
-    //     socket.emit('candidate', {
-    //         type: 'candidate',
-    //         label: event.candidate.sdpMLineIndex,
-    //         id: event.candidate.sdpMid,
-    //         candidate: event.candidate.candidate,
-    //         room: roomNumber
-    //     }, socket.id)
-    // }
-
 }
 
 function onTrackHandler(event) {
@@ -238,8 +227,6 @@ function onTrackHandler(event) {
         }
         console.log("studentStreamsId: ", studentStreamsId);
     }
-    
-    console.log("onTrackHandler() called");
 }
 
 socket.on('user_leave', function(leaver_id){
