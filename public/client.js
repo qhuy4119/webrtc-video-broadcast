@@ -21,10 +21,10 @@ var tempConnection;
 
 var iceServers = {
     serverList: [
-        { 'urls': 'stun:stun.services.mozilla.com' },
+        // { 'urls': 'stun:stun.services.mozilla.com' },
         { 'urls': 'stun:stun.l.google.com:19302' },
-        { 'urls': 'stun:stun.5sn.com:3478' },
-        { 'urls': 'stun:stun.stunprotocol.org' }
+        // { 'urls': 'stun:stun.5sn.com:3478' },
+        // { 'urls': 'stun:stun.stunprotocol.org' }
     ]
 }
 var streamConstraints = { audio: true, video: true };
