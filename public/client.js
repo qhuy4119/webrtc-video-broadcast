@@ -79,7 +79,7 @@ socket.on('ready', function (student_id) {
         // added to the connection. This lets you connect the incoming media to an element to display it  
 
         tempConnection.onnegotiationneeded = () => {
-            tempConnection.createOffer().then(sessionDescription => {
+            tempConnection.createOffer({iceRestart: true}).then(sessionDescription => {
                 tempConnection.setLocalDescription(sessionDescription);
                 socket.emit('offer', {
                     type: 'offer',
@@ -165,6 +165,19 @@ socket.on('offer', function (event) {
 
 // Handlers of both roles
 
+// when icecandidate event is fired after a call of setLocalDescription(). This handler will send ice candidate 
+// to the other end of the call
+function onIceCandidate(event) {
+    if (event.candidate) {
+        console.log('sending ice candidate: ' + JSON.stringify(event.candidate));
+        socket.emit('candidate', {
+            type: 'candidate',
+            candidate: event.candidate,
+            room: roomNumber
+        }, socket.id)
+    }
+}
+
 // When receiving ICE candidate from the other end
 socket.on('candidate', function (event, sender_id) {
     var candidate = new RTCIceCandidate(event.candidate);
@@ -190,22 +203,6 @@ socket.on('candidate', function (event, sender_id) {
     
     
 });
-
-
-// handler functions
-
-// when icecandidate event is fired after a call of setLocalDescription(). This handler will send ice candidate 
-// to the other end of the call
-function onIceCandidate(event) {
-    if (event.candidate) {
-        console.log('sending ice candidate: ' + JSON.stringify(event.candidate));
-        socket.emit('candidate', {
-            type: 'candidate',
-            candidate: event.candidate,
-            room: roomNumber
-        }, socket.id)
-    }
-}
 
 function onTrackHandler(event) {
     if(!isBroadcaster){
