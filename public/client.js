@@ -19,15 +19,13 @@ var rtcPeerConnection;
 var rtcPeerConnections = {}; // REALLY IMPORTANT: THE BROADCASTER NEEDS A DISTINCT RTCPeerConnection FOR EACH STUDENT
 var tempConnection;
 
-var iceServers = {
-    serverList: [
-        //{ 'urls': 'stun:stun.l.google.com:19302' },
-        { 'urls' : 'stun: stun:74.125.142.127:19302'}
-        // { 'urls': 'stun:stun.services.mozilla.com' },
-         //{ 'urls': 'stun:stun.5sn.com:3478' },
-        // { 'urls': 'stun:stun.stunprotocol.org' }
-    ]
-}
+var servers = { 'iceServers': [ { 'urls': 'stun:74.125.142.127:19302' },
+                                { 'urls': 'stun:stun.l.google.com:19302]'},
+                                { 'urls': 'stun:stun.services.mozilla.com' },
+                                { 'urls': 'stun:stun.5sn.com:3478' },
+                                { 'urls': 'stun:stun.stunprotocol.org' }
+]};
+
 var streamConstraints = { audio: true, video: true };
 var isBroadcaster;
 
@@ -65,7 +63,7 @@ socket.on('created', function (room) {
 socket.on('ready', function (student_id) {
     if (isBroadcaster) {
         console.log("Student_id: ", student_id, " has just joined the room. Let's start connecting with him/her")
-        tempConnection = new RTCPeerConnection(iceServers);
+        tempConnection = new RTCPeerConnection(servers);
 
         tempConnection.oniceconnectionstatechange = () => {
                 console.log("*** ICE connection state changed to " + String(rtcPeerConnections[student_id].iceConnectionState));
@@ -130,7 +128,7 @@ socket.on('joined', function (room) {
 
 socket.on('offer', function (event) {
     if (!isBroadcaster) {
-        rtcPeerConnection = new RTCPeerConnection(iceServers);
+        rtcPeerConnection = new RTCPeerConnection(servers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
         rtcPeerConnection.ontrack = onTrackHandler;
         rtcPeerConnection.oniceconnectionstatechange = () => {
