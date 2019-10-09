@@ -19,12 +19,20 @@ var rtcPeerConnection;
 var rtcPeerConnections = {}; // REALLY IMPORTANT: THE BROADCASTER NEEDS A DISTINCT RTCPeerConnection FOR EACH STUDENT
 var tempConnection;
 
-var servers = { 'iceServers': [ //{ 'urls': 'stun:74.125.142.127:19302' },
-                                //{ 'urls': 'stun:stun.l.google.com:19302]'},
-                                //{ 'urls': 'stun:stun.services.mozilla.com' },
-                                { 'urls': 'stun:stun.5sn.com:3478' },
-                                //{ 'urls': 'stun:stun.stunprotocol.org' }
-]};
+var servers = { iceServers: [{
+    urls: [ "stun:ss-turn2.xirsys.com" ]
+ }, {
+    username: "jeC-OpdXXcOw3AcJrkOal49dPFBAE3SAWuLpWe89XUR_iCl4crBb0V7MTFVB6gkLAAAAAF2dgE1xaHV5NDExOQ==",
+    credential: "595b7762-ea5f-11e9-8493-322c48b34491",
+    urls: [
+        "turn:ss-turn2.xirsys.com:80?transport=udp",
+        "turn:ss-turn2.xirsys.com:3478?transport=udp",
+        "turn:ss-turn2.xirsys.com:80?transport=tcp",
+        "turn:ss-turn2.xirsys.com:3478?transport=tcp",
+        "turns:ss-turn2.xirsys.com:443?transport=tcp",
+        "turns:ss-turn2.xirsys.com:5349?transport=tcp"
+    ]
+ }]};
 
 var streamConstraints = { audio: true, video: true };
 var isBroadcaster;
