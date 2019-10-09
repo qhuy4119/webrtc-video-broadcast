@@ -20,7 +20,7 @@ var rtcPeerConnections = {}; // REALLY IMPORTANT: THE BROADCASTER NEEDS A DISTIN
 var tempConnection;
 
 var servers = { 'iceServers': [ //{ 'urls': 'stun:74.125.142.127:19302' },
-                                { 'urls': 'stun:stun.l.google.com:19302]'},
+                                //{ 'urls': 'stun:stun.l.google.com:19302]'},
                                 //{ 'urls': 'stun:stun.services.mozilla.com' },
                                 { 'urls': 'stun:stun.5sn.com:3478' },
                                 //{ 'urls': 'stun:stun.stunprotocol.org' }
