@@ -8,7 +8,7 @@
 
     <div id="selectName">
         <label> Type your name</label>
-        <input id="userName" type="text" />
+        <input id="username" type="text" required />
         <button id="checkName">Check</button>
     </div>
 
@@ -16,11 +16,10 @@
         <label>Type the room number</label>
         <input id="roomNumber" type="text" />
         <button id="goRoom">Go</button>
+        <p> Currently, the creator of a room will be the teacher. This logic can be changed in the future
+        </p>
+        <a href="https://github.com/qhuy4119/webrtc-video-broadcast"> Github repo</a>
     </div>
-
-    <p> Currently, the creator of a room will be the teacher. This logic can be changed in the future
-    </p>
-    <a href="https://github.com/qhuy4119/webrtc-video-broadcast"> Github repo</a>
     
     <div id="consultingRoom" style="display:none">
         <video id="localVideo" autoplay muted controls></video>
