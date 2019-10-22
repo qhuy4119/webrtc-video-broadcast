@@ -217,6 +217,8 @@ function onTrackHandler(event) {
     if(!isBroadcaster){
         remoteVideo.srcObject = event.streams[0];
         broadcasterStream = event.streams[0];
+        let label = document.createElement("label");
+
     }
     else {
         if (!remoteVideo.srcObject){
@@ -226,6 +228,8 @@ function onTrackHandler(event) {
             let video = document.createElement("video");
             video.srcObject = event.streams[0];
             video.autoplay = true;
+            video.controls = true;
+            video.poster = "http://rmhc.org.sg/wp-content/uploads/tvc//vidloading.gif"
             divConsultingRoom.appendChild(video)   
         }
         if (!studentStreamsId.includes(event.streams[0].id)){
