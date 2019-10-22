@@ -5,7 +5,9 @@ var divConsultingRoom = document.getElementById("consultingRoom");
 var divSelectName = document.getElementById("selectName")
 var inputRoomNumber = document.getElementById("roomNumber");
 var btnGoRoom = document.getElementById("goRoom");
-var inputUsername = document.getElementById("username")
+var btnShowHideLocalVideo = document.getElementById("show/hide localVideo");
+var inputUsername = document.getElementById("username");
+var localVideo = document.getElementById("localVideo");
 
 
 // variables
@@ -15,6 +17,7 @@ var broadcasterStream;
 var broadcaster_username;
 var student_username;
 var receivedStreamsId = [];
+var showLocalVideo = true;
 
 // A STUDENT ONLY NEED ONE RTCPeerConnection to connect with the only teacher in the room. If a student can see
 // many teachers then this logic need to change
@@ -61,13 +64,24 @@ btnGoRoom.onclick = function () {
     }
 };
 
+btnShowHideLocalVideo.onclick = function () {
+    if (showLocalVideo){
+        localVideo.style.display = "none";
+        showLocalVideo = false;
+    }
+    else {
+        localVideo.style.display = "block";
+        showLocalVideo = true;
+    }
+};
+
 // message handlers
 
 
 ///////////////////////////////// Broadcaster only message handlers
 socket.on('created', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
-        createVideo(stream, "You", true);
+        localVideo = createVideo(stream, "You", true);
         localStream = stream;
         isBroadcaster = true;
     }).catch(function (err) {
@@ -140,7 +154,7 @@ socket.on('username', function(sender_username) {
 socket.on('joined', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
         localStream = stream;
-        createVideo(stream, "You", true);
+        localVideo = createVideo(stream, "You", true);
         isBroadcaster = false;
         socket.emit('ready', roomNumber, socket.id);
     }).catch(function (err) {
@@ -262,5 +276,6 @@ function createVideo(src, caption, isMuted)
     fig.appendChild(figCaption)
 
     divConsultingRoom.appendChild(fig)
+    return fig;
 }
 
