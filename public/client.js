@@ -225,12 +225,21 @@ function onTrackHandler(event) {
             remoteVideo.srcObject = event.streams[0];
         }
         else if (!studentStreamsId.includes(event.streams[0].id)) {
+            let fig = document.createElement("figure")
+
             let video = document.createElement("video");
             video.srcObject = event.streams[0];
             video.autoplay = true;
             video.controls = true;
             video.poster = "http://rmhc.org.sg/wp-content/uploads/tvc//vidloading.gif"
-            divConsultingRoom.appendChild(video)   
+            fig.appendChild(video)
+            
+            let figCaption = document.createElement("figcaption")
+            let text = document.createTextNode("User")
+            figCaption.appendChild(text)
+            fig.appendChild(figCaption)
+
+            divConsultingRoom.appendChild(fig)
         }
         if (!studentStreamsId.includes(event.streams[0].id)){
             studentStreamsId.push(event.streams[0].id);
