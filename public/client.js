@@ -4,11 +4,15 @@ var divSelectRoom = document.getElementById("selectRoom");
 var divConsultingRoom = document.getElementById("consultingRoom");
 var inputRoomNumber = document.getElementById("roomNumber");
 var btnGoRoom = document.getElementById("goRoom");
+var inputUsername = document.getElementById("username")
+
 
 // variables
 var roomNumber;
 var localStream;
 var broadcasterStream;
+var broadcaster_username;
+var student_username;
 var receivedStreamsId = [];
 
 // A STUDENT ONLY NEED ONE RTCPeerConnection to connect with the only teacher in the room. If a student can see
@@ -34,6 +38,7 @@ var servers = { iceServers: [{
 
 var streamConstraints = { audio: true, video: true };
 var isBroadcaster;
+var myUsername;
 
 // Let's do this
 var socket = io();
@@ -41,8 +46,13 @@ var socket = io();
 btnGoRoom.onclick = function () {
     if (inputRoomNumber.value === '') {
         alert("Please type a room number")
-    } else {
+    } 
+    else if (inputUsername.value === '') {
+        alert("Please choose a username")
+    }
+    else {
         roomNumber = inputRoomNumber.value;
+        myUsername = inputUsername.value;
         socket.emit('create or join', roomNumber);
         divSelectRoom.style = "display: none;";
         divConsultingRoom.style = "display: block;";
@@ -90,8 +100,7 @@ socket.on('ready', function (student_id) {
                     type: 'offer',
                     sdp: sessionDescription,
                     room: roomNumber
-                }, student_id);
-                console.log("sdp in the offer: " + JSON.stringify(sessionDescription));
+                }, student_id, myUsername);
             })
             .catch(error => {
                 console.log(error)
@@ -119,6 +128,12 @@ socket.on('answer', function (event, student_id) {
     }   
 })
 
+socket.on('username', function(sender_username) {
+    if (isBroadcaster){
+        student_username = sender_username;
+    }
+})
+
 /////////////////////////// Student only message handlers
 socket.on('joined', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
@@ -132,8 +147,9 @@ socket.on('joined', function (room) {
     console.log(socket.id, '(me) is a student');
 });
 
-socket.on('offer', function (event) {
+socket.on('offer', function (event, sender_username) {
     if (!isBroadcaster) {
+        broadcaster_username = sender_username;
         rtcPeerConnection = new RTCPeerConnection(servers);
         rtcPeerConnection.onicecandidate = onIceCandidate;
         rtcPeerConnection.ontrack = onTrackHandler;
@@ -142,9 +158,21 @@ socket.on('offer', function (event) {
         }
 
         rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event))
-        .then(function() {
-            localStream.getTracks().forEach(track => rtcPeerConnection.addTrack(track, localStream));
-          })
+        .then(function() 
+        {
+            let tracksSent = 0;
+            localStream.getTracks().forEach(function(track)
+            {
+                rtcPeerConnection.addTrack(track, localStream)//.then(function() 
+                // {
+                //     tracksSent++;
+                //     if (tracksSent === localStream.getTracks().length)
+                //     {
+                //         socket.emit("username", username)
+                //     }
+                // })
+            })
+        })
           .then(function() {
             return rtcPeerConnection.createAnswer();
           })
@@ -157,7 +185,6 @@ socket.on('offer', function (event) {
                 sdp: rtcPeerConnection.localDescription,
                 room: roomNumber
             }, socket.id);
-            console.log("sdp in the answer: " + JSON.stringify(rtcPeerConnection.localDescription));
             }
           )
           .catch(error => {
@@ -212,10 +239,11 @@ socket.on('candidate', function (event, sender_id) {
 });
 
 function onTrackHandler(event) {
+
     if (!receivedStreamsId.includes(event.streams[0].id)) {
-        createVideo(event.streams[0], String(event.streams[0].id))
+        createVideo(event.streams[0], isBroadcaster ? student_username : broadcaster_username)
         receivedStreamsId.push(event.streams[0].id);
-    }
+    }  
     console.log("receivedStreamsId: ", receivedStreamsId);
 }
 

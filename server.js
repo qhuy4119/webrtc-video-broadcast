@@ -49,10 +49,13 @@ io.on('connection', function (socket) {
 
     });
 
-    socket.on('offer', function(event, receiver_id){
-        socket.broadcast.to(receiver_id).emit('offer',event.sdp);
+    socket.on('offer', function(event, receiver_id, sender_username){
+        socket.broadcast.to(receiver_id).emit('offer',event.sdp, sender_username);
     });
 
+    socket.on('username', function(username){
+        socket.broadcast.to(BROADCASTER_ID).emit('username', student_username);
+    })
     socket.on('answer', function(event, sender_id){
         socket.broadcast.to(BROADCASTER_ID).emit('answer',event.sdp, String(sender_id));
     });
