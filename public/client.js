@@ -165,14 +165,9 @@ socket.on('offer', function (event, sender_username) {
             let tracksSent = 0;
             localStream.getTracks().forEach(function(track)
             {
-                rtcPeerConnection.addTrack(track, localStream)//.then(function() 
-                // {
-                //     tracksSent++;
-                //     if (tracksSent === localStream.getTracks().length)
-                //     {
-                //         socket.emit("username", username)
-                //     }
-                // })
+                rtcPeerConnection.addTrack(track, localStream)
+                socket.emit("username", myUsername)
+                
             })
         })
           .then(function() {
@@ -268,9 +263,4 @@ function createVideo(src, caption, isMuted)
 
     divConsultingRoom.appendChild(fig)
 }
-
-socket.on('user_leave', function(leaver_id){
-    console.log(String(leaver_id) + " has left the room");
-    //TODO: clean up, delete video on the screen,....
-});
 

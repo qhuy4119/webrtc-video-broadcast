@@ -53,7 +53,7 @@ io.on('connection', function (socket) {
         socket.broadcast.to(receiver_id).emit('offer',event.sdp, sender_username);
     });
 
-    socket.on('username', function(username){
+    socket.on('username', function(student_username){
         socket.broadcast.to(BROADCASTER_ID).emit('username', student_username);
     })
     socket.on('answer', function(event, sender_id){
