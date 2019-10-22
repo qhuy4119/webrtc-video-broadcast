@@ -4,14 +4,12 @@ var divSelectRoom = document.getElementById("selectRoom");
 var divConsultingRoom = document.getElementById("consultingRoom");
 var inputRoomNumber = document.getElementById("roomNumber");
 var btnGoRoom = document.getElementById("goRoom");
-var localVideo = document.getElementById("localVideo");
-var remoteVideo = document.getElementById("remoteVideo");
 
 // variables
 var roomNumber;
 var localStream;
 var broadcasterStream;
-var studentStreamsId = [];
+var receivedStreamsId = [];
 
 // A STUDENT ONLY NEED ONE RTCPeerConnection to connect with the only teacher in the room. If a student can see
 // many teachers then this logic need to change
@@ -57,7 +55,7 @@ btnGoRoom.onclick = function () {
 ///////////////////////////////// Broadcaster only message handlers
 socket.on('created', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
-        localVideo.srcObject = stream;
+        createVideo(stream, "You");
         localStream = stream;
         isBroadcaster = true;
     }).catch(function (err) {
@@ -125,7 +123,7 @@ socket.on('answer', function (event, student_id) {
 socket.on('joined', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
         localStream = stream;
-        localVideo.srcObject = stream;
+        createVideo(stream, "You");
         isBroadcaster = false;
         socket.emit('ready', roomNumber, socket.id);
     }).catch(function (err) {
@@ -214,41 +212,34 @@ socket.on('candidate', function (event, sender_id) {
 });
 
 function onTrackHandler(event) {
-    if(!isBroadcaster){
-        remoteVideo.srcObject = event.streams[0];
-        broadcasterStream = event.streams[0];
-        let label = document.createElement("label");
-
+    if (!receivedStreamsId.includes(event.streams[0].id)) {
+        createVideo(event.streams[0], String(event.streams[0].id))
+        receivedStreamsId.push(event.streams[0].id);
     }
-    else {
-        if (!remoteVideo.srcObject){
-            remoteVideo.srcObject = event.streams[0];
-        }
-        else if (!studentStreamsId.includes(event.streams[0].id)) {
-            let fig = document.createElement("figure")
+    console.log("receivedStreamsId: ", receivedStreamsId);
+}
 
-            let video = document.createElement("video");
-            video.srcObject = event.streams[0];
-            video.autoplay = true;
-            video.controls = true;
-            video.poster = "http://rmhc.org.sg/wp-content/uploads/tvc//vidloading.gif"
-            fig.appendChild(video)
-            
-            let figCaption = document.createElement("figcaption")
-            let text = document.createTextNode("User")
-            figCaption.appendChild(text)
-            fig.appendChild(figCaption)
+function createVideo(src, caption)
+{
+    let fig = document.createElement("figure")
 
-            divConsultingRoom.appendChild(fig)
-        }
-        if (!studentStreamsId.includes(event.streams[0].id)){
-            studentStreamsId.push(event.streams[0].id);
-        }
-        console.log("studentStreamsId: ", studentStreamsId);
-    }
+    let video = document.createElement("video");
+    video.srcObject = src;
+    video.autoplay = true;
+    video.controls = true;
+    video.poster = "http://rmhc.org.sg/wp-content/uploads/tvc//vidloading.gif"
+    fig.appendChild(video)
+    
+    let figCaption = document.createElement("figcaption")
+    let text = document.createTextNode(caption)
+    figCaption.appendChild(text)
+    fig.appendChild(figCaption)
+
+    divConsultingRoom.appendChild(fig)
 }
 
 socket.on('user_leave', function(leaver_id){
     console.log(String(leaver_id) + " has left the room");
     //TODO: clean up, delete video on the screen,....
 });
+
