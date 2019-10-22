@@ -2,6 +2,7 @@
 // getting dom elements
 var divSelectRoom = document.getElementById("selectRoom");
 var divConsultingRoom = document.getElementById("consultingRoom");
+var divSelectName = document.getElementById("selectName")
 var inputRoomNumber = document.getElementById("roomNumber");
 var btnGoRoom = document.getElementById("goRoom");
 var inputUsername = document.getElementById("username")
@@ -56,6 +57,7 @@ btnGoRoom.onclick = function () {
         socket.emit('create or join', roomNumber);
         divSelectRoom.style = "display: none;";
         divConsultingRoom.style = "display: block;";
+        divSelectName.style = "display: none;";
     }
 };
 
@@ -65,7 +67,7 @@ btnGoRoom.onclick = function () {
 ///////////////////////////////// Broadcaster only message handlers
 socket.on('created', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
-        createVideo(stream, "You");
+        createVideo(stream, "You", true);
         localStream = stream;
         isBroadcaster = true;
     }).catch(function (err) {
@@ -138,7 +140,7 @@ socket.on('username', function(sender_username) {
 socket.on('joined', function (room) {
     navigator.mediaDevices.getUserMedia(streamConstraints).then(function (stream) {
         localStream = stream;
-        createVideo(stream, "You");
+        createVideo(stream, "You", true);
         isBroadcaster = false;
         socket.emit('ready', roomNumber, socket.id);
     }).catch(function (err) {
@@ -247,7 +249,7 @@ function onTrackHandler(event) {
     console.log("receivedStreamsId: ", receivedStreamsId);
 }
 
-function createVideo(src, caption)
+function createVideo(src, caption, isMuted)
 {
     let fig = document.createElement("figure")
 
@@ -255,6 +257,7 @@ function createVideo(src, caption)
     video.srcObject = src;
     video.autoplay = true;
     video.controls = true;
+    video.muted = isMuted;
     video.poster = "http://rmhc.org.sg/wp-content/uploads/tvc//vidloading.gif"
     fig.appendChild(video)
     
